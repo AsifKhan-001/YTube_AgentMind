@@ -12,21 +12,41 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 import os
+from langchain_mistralai import ChatMistralAI
+from mistralai.client import Mistral
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 
 from prompts.notes_prompts import NOTES_PROMPTS
-from src.config import MODEL
+from src.config import MODEL,MISTRALMODEL
 
 
 
 def build_notes():
+    print("Notes Generation Start")
 
     text_notes = ""
 
-    model = ChatOpenAI(
-            api_key=os.getenv("NVIDIA_API_KEY"),
-            base_url="https://integrate.api.nvidia.com/v1",
-            model= MODEL
-        )
+    # model = ChatMistralAI(
+    #     api_key=os.getenv("MISTRAL_API_KEY"),
+    #     model=MISTRALMODEL,    
+    #     temperature=0
+    # )
+
+
+    # model = ChatOpenAI(
+    #     api_key=os.getenv("NVIDIA_API_KEY"),
+    #     base_url="https://integrate.api.nvidia.com/v1",
+    #     model= MODEL
+    # )
+
+    model = ChatGoogleGenerativeAI(
+        model="gemini-3.5-flash-lite",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0.2
+    )
+
     
     notes_Prompt_template =PromptTemplate(
         template= NOTES_PROMPTS,

@@ -42,12 +42,12 @@ Determine the number of flashcards dynamically based on the transcript length an
 Guidelines:
 
 • Videos shorter than 10 minutes: 5–10 flashcards
-• 10–20 minutes: 10–15 flashcards
-• 20–40 minutes: 15–25 flashcards
-• 40–60 minutes: 25–40 flashcards
-• Longer than 60 minutes: Up to 50 flashcards
+• 10–20 minutes: 5–10 flashcards
+• 20–40 minutes: 10–15 flashcards
+• 40–60 minutes: 15–20 flashcards
+• Longer than 60 minutes: Up to 25 flashcards
 
-Never generate more than 50 flashcards.
+Never generate more than 30 flashcards.
 
 Quality is always more important than quantity.
 

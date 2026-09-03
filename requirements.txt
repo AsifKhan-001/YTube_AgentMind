@@ -16,7 +16,7 @@ asttokens==3.0.1
 async-lru==2.3.0
 attrs==26.1.0
 babel==2.18.0
-bcrypt==5.0.0
+bcrypt==4.0.1
 beautifulsoup4==4.15.0
 bleach==6.4.0
 blinker==1.9.0
@@ -309,3 +309,10 @@ yarl==1.24.2
 youtube-transcript-api==1.2.4
 zopfli==0.4.3
 zstandard==0.25.0
+python-jose==3.5.0
+passlib==1.7.4
+ecdsa==0.19.2
+rsa==4.9.1
+email-validator==2.3.0
+dnspython==2.8.0
+langchain-mistralai==1.1.6

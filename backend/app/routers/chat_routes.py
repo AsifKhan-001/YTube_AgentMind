@@ -25,7 +25,7 @@ def _get_or_build_graph(youtube_url: str):
     vector_store = create_vector_store(chunks, embeddings)
     retriever = get_retriever(vector_store)
 
-    graph = build_rag_graph(retriever, transcript_data["transcript_text"])
+    graph = build_rag_graph(retriever, transcript_data["transcript_text"], youtube_url)
     _graph_cache[youtube_url] = graph
     return graph
 
@@ -35,7 +35,11 @@ def ask(request: schemas.ChatRequest, current_user: models.User = Depends(auth.g
     graph = _get_or_build_graph(request.youtube_url)
     result = graph.invoke({"messages": [HumanMessage(content=request.message)]})
 
-    final_answer = result["messages"][-1].content
+    raw_answer = result["messages"][-1].content
+    final_answer = raw_answer if isinstance(raw_answer, str) else "".join(
+        part.get("text", "") if isinstance(part, dict) else str(part)
+        for part in raw_answer
+    )
     response = schemas.ChatResponse(answer=final_answer)
 
     # Walk any ToolMessages to see if notes_tool or flashcard_tool fired

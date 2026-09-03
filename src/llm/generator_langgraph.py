@@ -21,7 +21,7 @@ from typing import List
 import os
 
 from prompts.qa_doubt_prompts import QA_PROMPT
-from src.config import URL,MODEL
+from src.config import URL,MODEL,MISTRALMODEL
 from src.config import LLM_MODEL,TEMPERATURE
 from src.utils.file_manager import create_markdown_files
 from src.llm.generate_topic_list import build_topic_list
@@ -36,6 +36,10 @@ from src.utils.save_markdown import save_markdown
 from src.utils.save_pdf import save_pdf
 from src.llm.generate_flashcards import build_flashcard
 
+from langchain_mistralai import ChatMistralAI
+from mistralai.client import Mistral
+
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 
@@ -57,7 +61,7 @@ def format_docs(retriever_docs):
     return context_text
 
 
-def build_rag_graph(retriever,original_transcript):
+def build_rag_graph(retriever,original_transcript,video_url):
 
     # model = ChatOllama(
     #     model= LLM_MODEL,
@@ -65,12 +69,31 @@ def build_rag_graph(retriever,original_transcript):
     # )
 
     # original_transcript = load_youtube_transcript(URL)["transcript_text"]
+    
+    
+    #mistral_model
+    
+    # from langchain_mistralai import ChatMistralAI
 
-    model = ChatOpenAI(
-        api_key=os.getenv("NVIDIA_API_KEY"),
-        base_url="https://integrate.api.nvidia.com/v1",
-        model= MODEL
+    # model = ChatMistralAI(
+    #     api_key=os.getenv("MISTRAL_API_KEY"),
+    #     model=MISTRALMODEL,    
+    #     temperature=0
+    # )
+
+    
+    model = ChatGoogleGenerativeAI(
+        model="gemini-3.5-flash-lite",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0.2
     )
+
+
+    # model = ChatOpenAI(
+    #     api_key=os.getenv("NVIDIA_API_KEY"),
+    #     base_url="https://integrate.api.nvidia.com/v1",
+    #     model= MODEL
+    # )
 
     prompt = PromptTemplate(
         template=QA_PROMPT,
@@ -117,7 +140,7 @@ def build_rag_graph(retriever,original_transcript):
 
     #tool for Notes:
     @tool
-    def notes_tool(query):
+    def notes_tool(query: str) -> str:
 
         """
         use this tool when the user ask for Generate a Detailed Notes of this Video or related to that
@@ -130,8 +153,9 @@ def build_rag_graph(retriever,original_transcript):
         print("=" * 50)
         
         filename = create_markdown_files()
-        topic_list = build_topic_list()
+        topic_list = build_topic_list(original_transcript)
         notes_chain = build_notes()
+        print("Notes Generation END")
 
         text_notes = ""
 
@@ -140,8 +164,11 @@ def build_rag_graph(retriever,original_transcript):
                 "topic": topic_list[i],
                 "context": original_transcript
             })
-            text_notes += notes.content + "\n\n"
-            markdown_path = save_markdown(notes.content,filename)
+            note_text = notes.content if isinstance(notes.content, str) else "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in notes.content)
+            text_notes += note_text + "\n\n"
+            markdown_path = save_markdown(note_text,filename)
         
         pdf_path = create_pdf_files()
         try:
@@ -178,15 +205,15 @@ def build_rag_graph(retriever,original_transcript):
     
     #tool for RAG:
     @tool
-    def rag_tool(query):
+    def rag_tool(query: str) -> str:
 
         """
         Retriever relevant information from the pdf document.
         Use this tool when the user asks factual / conceptual questions,doubts and about Timestamps
         that might be answered from the stored documents.
         """
-
-        url_id = parse_qs(urlparse(URL).query).get("v", [None])[0]
+        # url_id = parse_qs(urlparse(URL).query).get("v", [None])[0]    #Its use for when you run on terminal
+        url_id = parse_qs(urlparse(video_url).query).get("v", [None])[0]     #its for the Backend URL given by user
 
         result = retriever.invoke(query)
 

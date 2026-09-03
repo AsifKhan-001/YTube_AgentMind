@@ -11,7 +11,7 @@ def load_embedding_model():
     # )
 
     embeddingmodel = NVIDIAEmbeddings(
-    model="nvidia/llama-nemotron-embed-1b-v2",
+    model="nvidia/llama-nemotron-embed-vl-1b-v2",
     api_key=os.getenv("NVIDIA_API_KEY"),
     )
 
